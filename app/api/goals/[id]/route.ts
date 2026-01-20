@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { connectDB } from '@/lib/mongodb';
 import { Goal } from '@/lib/models';
+import { Types } from 'mongoose';
 
 function getEmailFromToken(token: string): string {
   try {
@@ -8,6 +9,17 @@ function getEmailFromToken(token: string): string {
   } catch {
     return '';
   }
+}
+
+function formatGoal(goal: any) {
+  return {
+    id: goal._id.toString(),
+    title: goal.title,
+    description: goal.description,
+    completed: goal.completed,
+    userId: goal.userId,
+    createdAt: goal.createdAt,
+  };
 }
 
 export async function PATCH(
@@ -26,8 +38,13 @@ export async function PATCH(
     const { id } = await params;
     const { completed } = await request.json();
 
+    // Validate ObjectId
+    if (!Types.ObjectId.isValid(id)) {
+      return NextResponse.json({ message: 'Invalid goal ID' }, { status: 400 });
+    }
+
     const goal = await Goal.findOneAndUpdate(
-      { _id: id, userId: email },
+      { _id: new Types.ObjectId(id), userId: email },
       { completed },
       { new: true }
     );
@@ -36,7 +53,7 @@ export async function PATCH(
       return NextResponse.json({ message: 'Goal not found' }, { status: 404 });
     }
 
-    return NextResponse.json(goal);
+    return NextResponse.json(formatGoal(goal));
   } catch (error) {
     console.error('Error updating goal:', error);
     return NextResponse.json(
@@ -61,8 +78,13 @@ export async function DELETE(
     const email = getEmailFromToken(token);
     const { id } = await params;
 
+    // Validate ObjectId
+    if (!Types.ObjectId.isValid(id)) {
+      return NextResponse.json({ message: 'Invalid goal ID' }, { status: 400 });
+    }
+
     const goal = await Goal.findOneAndDelete({
-      _id: id,
+      _id: new Types.ObjectId(id),
       userId: email,
     });
 

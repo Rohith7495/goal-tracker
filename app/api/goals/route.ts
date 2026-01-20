@@ -10,6 +10,17 @@ function getEmailFromToken(token: string): string {
   }
 }
 
+function formatGoal(goal: any) {
+  return {
+    id: goal._id.toString(),
+    title: goal.title,
+    description: goal.description,
+    completed: goal.completed,
+    userId: goal.userId,
+    createdAt: goal.createdAt,
+  };
+}
+
 export async function GET(request: NextRequest) {
   try {
     await connectDB();
@@ -22,7 +33,7 @@ export async function GET(request: NextRequest) {
     const email = getEmailFromToken(token);
     const goals = await Goal.find({ userId: email }).sort({ createdAt: -1 });
 
-    return NextResponse.json(goals);
+    return NextResponse.json(goals.map(formatGoal));
   } catch (error) {
     console.error('Error fetching goals:', error);
     return NextResponse.json(
@@ -60,7 +71,7 @@ export async function POST(request: NextRequest) {
 
     await goal.save();
 
-    return NextResponse.json(goal);
+    return NextResponse.json(formatGoal(goal));
   } catch (error) {
     console.error('Error creating goal:', error);
     return NextResponse.json(
