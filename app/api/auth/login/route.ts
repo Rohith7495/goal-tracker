@@ -1,10 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-
-// Simple in-memory storage for demo
-const users: Map<string, { email: string; password: string }> = new Map();
-
-// Simulating a user for testing
-users.set('test@example.com', { email: 'test@example.com', password: 'password123' });
+import { usersDB } from '@/lib/storage';
 
 export async function POST(request: NextRequest) {
   const { email, password } = await request.json();
@@ -16,7 +11,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const user = users.get(email);
+  const user = usersDB.get(email);
 
   if (!user || user.password !== password) {
     return NextResponse.json(
