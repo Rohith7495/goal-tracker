@@ -22,7 +22,7 @@ function getEmailFromToken(token: string): string {
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const token = request.headers.get('Authorization')?.replace('Bearer ', '');
 
@@ -31,7 +31,7 @@ export async function PATCH(
   }
 
   const email = getEmailFromToken(token);
-  const { id } = params;
+  const { id } = await params;
   const { completed } = await request.json();
 
   const userGoals = goals.get(email) || [];
@@ -48,7 +48,7 @@ export async function PATCH(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const token = request.headers.get('Authorization')?.replace('Bearer ', '');
 
@@ -57,7 +57,7 @@ export async function DELETE(
   }
 
   const email = getEmailFromToken(token);
-  const { id } = params;
+  const { id } = await params;
 
   let userGoals = goals.get(email) || [];
   const filteredGoals = userGoals.filter((g) => g.id !== id);
