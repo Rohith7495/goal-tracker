@@ -20,6 +20,7 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [token, setToken] = useState('');
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     const storedToken = localStorage.getItem('token');
@@ -29,6 +30,7 @@ export default function Dashboard() {
     }
     setToken(storedToken);
     fetchGoals(storedToken);
+    checkAdminStatus(storedToken);
   }, []);
 
   const fetchGoals = async (authToken: string) => {
@@ -41,6 +43,19 @@ export default function Dashboard() {
       setError('Failed to load goals');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const checkAdminStatus = async (authToken: string) => {
+    try {
+      const response = await axios.get('/api/users', {
+        headers: { Authorization: `Bearer ${authToken}` },
+      });
+      // If the request succeeds, the user is admin
+      setIsAdmin(true);
+    } catch (err) {
+      // User is not admin
+      setIsAdmin(false);
     }
   };
 
@@ -96,12 +111,22 @@ export default function Dashboard() {
       <div className="max-w-2xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-4xl font-bold text-white">My Goals</h1>
-          <button
-            onClick={handleLogout}
-            className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg transition"
-          >
-            Logout
-          </button>
+          <div className="space-x-4 flex">
+            {isAdmin && (
+              <button
+                onClick={() => router.push('/admin')}
+                className="bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg transition"
+              >
+                Admin Panel
+              </button>
+            )}
+            <button
+              onClick={handleLogout}
+              className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg transition"
+            >
+              Logout
+            </button>
+          </div>
         </div>
 
         {error && (
