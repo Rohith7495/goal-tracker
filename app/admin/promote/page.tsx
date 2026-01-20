@@ -28,7 +28,7 @@ export default function PromoteUser() {
     setSuccess('');
 
     try {
-      const response = await axios.post(
+      await axios.post(
         '/api/admin/promote',
         { targetEmail: email },
         { headers: { Authorization: `Bearer ${token}` } }

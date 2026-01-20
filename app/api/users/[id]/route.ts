@@ -12,7 +12,7 @@ function getEmailFromToken(token: string): string {
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectDB();
@@ -33,7 +33,8 @@ export async function DELETE(
     }
 
     // Find user to delete
-    const userToDelete = await User.findById(params.id);
+    const { id } = await params;
+    const userToDelete = await User.findById(id);
     if (!userToDelete) {
       return NextResponse.json({ message: 'User not found' }, { status: 404 });
     }
@@ -50,7 +51,7 @@ export async function DELETE(
     await Goal.deleteMany({ userId: userToDelete.email });
 
     // Delete the user
-    await User.findByIdAndDelete(params.id);
+    await User.findByIdAndDelete(id);
 
     return NextResponse.json({ message: 'User deleted successfully' });
   } catch (error) {

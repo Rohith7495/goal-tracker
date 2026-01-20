@@ -48,7 +48,7 @@ export default function Dashboard() {
 
   const checkAdminStatus = async (authToken: string) => {
     try {
-      const response = await axios.get('/api/users', {
+      await axios.get('/api/users', {
         headers: { Authorization: `Bearer ${authToken}` },
       });
       // If the request succeeds, the user is admin
