@@ -1,27 +1,38 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { usersDB } from '@/lib/storage';
+import { connectDB } from '@/lib/mongodb';
+import { User } from '@/lib/models';
 
 export async function POST(request: NextRequest) {
-  const { email, password } = await request.json();
+  try {
+    await connectDB();
+    const { email, password } = await request.json();
 
-  if (!email || !password) {
+    if (!email || !password) {
+      return NextResponse.json(
+        { message: 'Email and password are required' },
+        { status: 400 }
+      );
+    }
+
+    // Find user
+    const user = await User.findOne({ email });
+
+    if (!user || user.password !== password) {
+      return NextResponse.json(
+        { message: 'Invalid email or password' },
+        { status: 401 }
+      );
+    }
+
+    // Generate token
+    const token = Buffer.from(email).toString('base64');
+
+    return NextResponse.json({ token, email });
+  } catch (error) {
+    console.error('Login error:', error);
     return NextResponse.json(
-      { message: 'Email and password are required' },
-      { status: 400 }
+      { message: 'Internal server error' },
+      { status: 500 }
     );
   }
-
-  const user = usersDB.get(email);
-
-  if (!user || user.password !== password) {
-    return NextResponse.json(
-      { message: 'Invalid email or password' },
-      { status: 401 }
-    );
-  }
-
-  // Generate a simple token
-  const token = Buffer.from(email).toString('base64');
-
-  return NextResponse.json({ token, email });
 }

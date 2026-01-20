@@ -12,7 +12,8 @@
     "next": "latest",
     "react": "latest",
     "react-dom": "latest",
-    "axios": "latest"
+    "axios": "latest",
+    "mongoose": "latest"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
